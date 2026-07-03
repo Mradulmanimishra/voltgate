@@ -1,0 +1,36 @@
+[guardrails]
+max_cost_per_request_usd = 1.00
+max_tokens_per_request   = 100_000
+blocked_phrases = [
+    "ignore previous instructions",
+    "jailbreak",
+    "ignore all prior",
+    "disregard your instructions",
+]
+# force_model = "claude-sonnet-4-6"
+
+[model_budgets]
+# Set true to enforce per-model daily spend caps.
+enabled = false
+# What to do when a model's daily budget is exceeded:
+#   "fallback" — silently route to the next cheaper model
+#   "reject"   — return 429 Too Many Requests
+on_exceeded = "fallback"
+
+[model_budgets.daily_limits_usd]
+claude-fable-5   = 50.0
+claude-opus-4-8  = 30.0
+claude-sonnet-4-6 = 100.0
+claude-haiku-4-5  = 20.0
+
+[context_engineering]
+compress_threshold_tokens = 8_000
+keep_recent_messages      = 6
+simple_max_input_tokens   = 4_000
+medium_max_input_tokens   = 40_000
+complex_max_input_tokens  = 180_000
+simple_max_output_tokens  = 512
+medium_max_output_tokens  = 4_096
+complex_max_output_tokens = 16_384
+prompt_caching_enabled    = true
+task_specific_system_prompts = true

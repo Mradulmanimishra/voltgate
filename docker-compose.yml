@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  router:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./router.db:/app/router.db
+      - ./config.toml:/app/config.toml
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ROUTER_API_KEY: ${ROUTER_API_KEY:-}
+      MAX_RPM: ${MAX_RPM:-60}
+      MAX_SPEND_PER_HOUR_USD: ${MAX_SPEND_PER_HOUR_USD:-10.0}
+      SPEND_ALERT_WEBHOOK_URL: ${SPEND_ALERT_WEBHOOK_URL:-}
+      PORT: "3001"
+      DB_PATH: "/app/router.db"
+      CONFIG_PATH: "/app/config.toml"
+      RUST_LOG: ${RUST_LOG:-llm_router=info,tower_http=info}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

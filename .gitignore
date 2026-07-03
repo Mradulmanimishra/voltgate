@@ -1,0 +1,7 @@
+.env
+target/
+router.db
+*.db
+*.db-wal
+*.db-shm
+logs/
