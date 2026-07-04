@@ -104,7 +104,19 @@ docker-compose up --build -d
 
 ---
 
-## 🔌 Integration Examples
+## 🔌 Compatibility & Standards
+
+VoltGate is designed to fit seamlessly into modern AI workflows:
+
+*   **OpenAI Compatibility:** Serves as a drop-in proxy for standard OpenAI endpoints:
+    *   `/v1/chat/completions` (Text generation & real-time streaming chunks)
+    *   `/v1/embeddings` (Text embeddings mapping to Voyage AI or local mock formats)
+*   **Anthropic Models:** Integrates natively with the Anthropic Messages API, handling Claude `Haiku 4.5`, `Sonnet 4.6`, `Opus 4.8`, and `Fable 5`.
+*   **SDK/Framework Integrations:** Compatible with the official OpenAI Python/Node SDKs, Anthropic SDKs, LangChain, LlamaIndex, LiteLLM, or direct raw HTTP `curl` clients.
+
+---
+
+## 🚀 Integration Examples
 
 VoltGate integrates with your current code by swapping the API endpoint.
 
