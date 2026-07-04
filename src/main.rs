@@ -18,6 +18,7 @@ mod webhook;
 mod streaming;
 mod state;
 mod embeddings;
+mod docs;
 
 use std::sync::Arc;
 use axum::{
@@ -88,7 +89,9 @@ async fn main() {
 
     let public = Router::new()
         .route("/health",  get(health))
-        .route("/metrics", get(prometheus_metrics));
+        .route("/metrics", get(prometheus_metrics))
+        .route("/docs",    get(docs::docs_handler))
+        .route("/openapi.json", get(docs::openapi_json_handler));
 
     let app = Router::new()
         .merge(protected).merge(public)
@@ -99,6 +102,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     tracing::info!("VoltGate  ➜  http://{addr}");
     tracing::info!("Dashboard   ➜  http://{addr}/dashboard");
+    tracing::info!("Playground  ➜  http://{addr}/docs");
     tracing::info!("Metrics     ➜  http://{addr}/metrics");
     axum::serve(listener, app).await.unwrap();
 }

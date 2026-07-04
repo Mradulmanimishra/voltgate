@@ -94,6 +94,7 @@ cargo build --release
 ./target/release/voltgate
 ```
 *   **Dashboard:** [http://localhost:3001/dashboard](http://localhost:3001/dashboard)
+*   **API Playground / Docs:** [http://localhost:3001/docs](http://localhost:3001/docs)
 *   **Prometheus Metrics:** [http://localhost:3001/metrics](http://localhost:3001/metrics)
 *   **Health Status:** [http://localhost:3001/health](http://localhost:3001/health)
 
@@ -211,6 +212,8 @@ claude-sonnet-4-6 = 100.0
 | **GET** | `/api/config` | Bearer | Retrieve active in-memory guardrails configuration |
 | **POST** | `/api/config` | Bearer | Update and write-back configurations to `config.toml` |
 | **GET** | `/api/rate-limits` | Bearer | Fetch client rate limit and hourly spend snapshots |
+| **GET** | `/docs` | Open | Interactive Scalar API Reference & Playground |
+| **GET** | `/openapi.json` | Open | OpenAPI v3 specification file |
 | **GET** | `/metrics` | Open | Prometheus scraper statistics endpoint |
 | **GET** | `/health` | Open | System heartbeat endpoint (`{"status": "ok"}`) |
 
