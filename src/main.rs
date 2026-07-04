@@ -70,8 +70,39 @@ async fn main() {
     tracing::info!("Rate limits: {max_rpm} rpm, ${max_spend_hr:.2}/hr");
     if !webhook_url.is_empty() { tracing::info!("Spend alerts enabled"); }
 
+    let guardrails_arc = Arc::new(tokio::sync::RwLock::new(guardrails));
+    let guardrails_write = Arc::clone(&guardrails_arc);
+    let config_path_clone = config_path.clone();
+
+    // Spawn config hot-reloader background watcher task
+    tokio::spawn(async move {
+        let mut last_modified = std::fs::metadata(&config_path_clone)
+            .and_then(|m| m.modified())
+            .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
+
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+            if let Ok(metadata) = std::fs::metadata(&config_path_clone) {
+                if let Ok(modified) = metadata.modified() {
+                    if modified > last_modified {
+                        if let Ok(raw) = std::fs::read_to_string(&config_path_clone) {
+                            if let Ok(new_config) = toml::from_str::<GuardrailsConfig>(&raw) {
+                                let mut lock = guardrails_write.write().await;
+                                *lock = new_config;
+                                last_modified = modified;
+                                tracing::info!("config.toml modification detected — guardrails and budgets config hot-reloaded successfully");
+                            } else {
+                                tracing::error!("Failed to parse updated config.toml — keeping previous config");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     let state = AppState {
-        db, classifier, proxy, guardrails: Arc::new(tokio::sync::RwLock::new(guardrails)), rate_limiter,
+        db, classifier, proxy, guardrails: guardrails_arc, rate_limiter,
         api_key, max_rpm, max_spend_hr, webhook_url, http_client,
     };
 
