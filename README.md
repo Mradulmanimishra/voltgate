@@ -51,6 +51,24 @@ graph TD
     DB --> Prometheus[/metrics Endpoint]
 ```
 
+### 🏛️ Module Architecture
+
+The codebase is highly modularized inside the `src/` directory, adhering to single-responsibility design principles:
+
+| Component | Responsibility |
+| :--- | :--- |
+| **`auth.rs`** | Bearer token authentication middleware for API route security. |
+| **`rate_limiter.rs`** | Implements call volume (RPM) and hour-spend sliding windows (supporting both local memory or distributed Redis). |
+| **`classifier.rs`** | Real-time classification engine utilizing cached Claude Haiku checks to identify complexity. |
+| **`guardrails.rs`** | Pre-flight limits verifying cost limits, input token budgets, and blocked jailbreak phrases. |
+| **`context_engine.rs`** | Trims message history, compresses redundant tokens, and injects customized prompts. |
+| **`proxy.rs`** | Handles downstream forwarding, retry behaviors, and model fallback escalation for standard JSON completions. |
+| **`streaming.rs`** | Custom Server-Sent Events (SSE) streaming engine forwarding real-time token chunks. |
+| **`retry.rs`** & **`fallback.rs`** | Robust retry mechanics (exponential backoff with jitter) and deterministic model downgrades. |
+| **`database.rs`** | SQLite integration logging request records, latencies, cache rates, and token counts. |
+| **`dashboard.rs`** | Serving a dark-themed HTML monitoring dashboard visualizing metrics via Chart.js. |
+| **`webhook.rs`** | Dispatches instant spending alerts to external endpoints (e.g. Slack) on budget thresholds. |
+
 ---
 
 ## 📦 Quick Start
@@ -181,10 +199,18 @@ claude-sonnet-4-6 = 100.0
 
 ## 🧪 Development & Testing
 
-Run the test suite using the custom linker library search path (for MinGW compatibility on Windows):
+VoltGate includes a comprehensive test suite of 108 unit and integration tests validating the routing logic, rate limiter, context engineering, and guardrails.
+
+### Running Tests
+
+**On Linux / macOS:**
 ```bash
-# Verify all unit and integration tests (108 tests)
-$env:RUSTFLAGS = "-L E:\voltgate-complete\voltgate\gcc_compat"
+cargo test
+```
+
+**On Windows (PowerShell, using the bundled MinGW compatibility libraries):**
+```powershell
+$env:RUSTFLAGS = "-L $PWD\gcc_compat"
 cargo test
 ```
 
