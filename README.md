@@ -17,6 +17,13 @@ VoltGate is an open-source, high-performance, and intelligent proxy server desig
 *   **Resiliency & Failovers:** Automatically handles transient network or provider failures (5xx, 429, 529) via exponential backoff with jitter, falling back across models if error persists.
 *   **Real-time Admin UI:** Features a dark-themed live dashboard to inspect latencies, cache hit rates, model distributions, and hot-reload guardrail parameters on the fly.
 
+## 🌟 Architectural Strengths
+
+*   **Intelligent Caching:** Classification inputs are hashed using SHA-256 and stored in an in-memory/SQLite cache with a 1-hour TTL. Repeated prompts skip the classification step completely, eliminating extra latency.
+*   **Failover Cascades:** If the primary model exhausts all retries due to provider outages (429 or 529), VoltGate automatically falls back to alternative models (e.g., `Fable` $\rightarrow$ `Sonnet` $\rightarrow$ `Haiku`) to ensure absolute uptime.
+*   **Dynamic Context Pruning:** Prompt payloads are inspected to mark Anthropic prompt caching boundaries, saving up to **90%** of input costs on long multi-turn chats.
+*   **Distributed Architecture:** Switches seamlessly from single-node local memory rate limits to a distributed cluster setup by connecting a Redis instance via the `REDIS_URL` variable.
+
 ---
 
 ## 🗺️ How It Works
