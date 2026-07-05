@@ -17,7 +17,7 @@ services:
       PORT: "3001"
       DB_PATH: "/app/router.db"
       CONFIG_PATH: "/app/config.toml"
-      RUST_LOG: ${RUST_LOG:-llm_router=info,tower_http=info}
+      RUST_LOG: ${RUST_LOG:-voltgate=info,tower_http=info}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]

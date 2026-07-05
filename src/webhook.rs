@@ -50,11 +50,7 @@ pub fn check_threshold_crossed(caller_id: &str, current_spend: f64, limit: f64) 
     None
 }
 
-#[derive(Debug, serde::Serialize)]
-pub struct SpendAlert {
-    pub caller_id: String, pub threshold_pct: f64, pub current_spend: f64,
-    pub limit_usd: f64, pub timestamp: String,
-}
+
 
 pub async fn send_spend_alert(webhook_url: &str, caller_id: &str, threshold: f64, current_spend: f64, limit_usd: f64, client: &reqwest::Client) {
     if webhook_url.is_empty() { return; }

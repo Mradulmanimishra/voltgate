@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::models::{
     AnthropicResponse, OpenAIRequest, OpenAIResponse, OpenAIChoice,
     OpenAIMessage, OpenAIUsage, RouterMeta, ModelPricing, ApiCallRecord,
-    Classification, ANTHROPIC_API,
+    Classification, ANTHROPIC_API, split_system,
 };
 use crate::database::{Db, insert_call};
 use crate::context_engine::{self, ContextReport};
@@ -39,7 +39,7 @@ impl Proxy {
         &self, req: &OpenAIRequest, routed_model: &str,
         classification: &Classification, db: &Db,
     ) -> Result<(OpenAIResponse, ContextReport, FallbackOutcome), String> {
-        let (user_system, user_messages) = split_system(req);
+        let (user_system, user_messages) = split_system(&req.messages);
 
         let (ce_body, ce_report) = context_engine::prepare_request(
             &user_messages, req.max_tokens, req.temperature, classification,
@@ -158,15 +158,4 @@ impl Proxy {
 
         Err(format!("All models in fallback chain exhausted. Last error: {last_error}"))
     }
-}
-
-fn split_system(req: &OpenAIRequest) -> (Option<String>, Vec<OpenAIMessage>) {
-    let mut system: Option<String> = None;
-    let messages = req.messages.iter().filter_map(|m| {
-        if m.role == "system" {
-            system = Some(match &m.content { serde_json::Value::String(s) => s.clone(), other => other.to_string() });
-            None
-        } else { Some(m.clone()) }
-    }).collect();
-    (system, messages)
 }

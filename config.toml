@@ -23,14 +23,4 @@ claude-opus-4-8  = 30.0
 claude-sonnet-4-6 = 100.0
 claude-haiku-4-5  = 20.0
 
-[context_engineering]
-compress_threshold_tokens = 8_000
-keep_recent_messages      = 6
-simple_max_input_tokens   = 4_000
-medium_max_input_tokens   = 40_000
-complex_max_input_tokens  = 180_000
-simple_max_output_tokens  = 512
-medium_max_output_tokens  = 4_096
-complex_max_output_tokens = 16_384
-prompt_caching_enabled    = true
-task_specific_system_prompts = true
+

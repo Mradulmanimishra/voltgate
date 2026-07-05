@@ -1,5 +1,15 @@
 use crate::database::*;
 
+/// Escape HTML special characters to prevent XSS when embedding
+/// database values into the dashboard HTML template.
+fn esc(s: &str) -> String {
+    s.replace('&', "&amp;")
+     .replace('<', "&lt;")
+     .replace('>', "&gt;")
+     .replace('"', "&quot;")
+     .replace('\'', "&#x27;")
+}
+
 pub fn render(db: &Db) -> String {
     let today      = cost_today(db);
     let by_model   = cost_by_model(db);
@@ -22,17 +32,17 @@ pub fn render(db: &Db) -> String {
         let lat    = r["latency_ms"].as_i64().unwrap_or(0);
         let cached = r["cache_hit"].as_bool().unwrap_or(false);
         let ts     = r["timestamp"].as_str().unwrap_or("").get(..16).unwrap_or("");
-        format!("<tr><td>{ts}</td><td>{short}</td><td>{comp}</td><td>${cost:.6}</td><td>{lat}ms</td><td>{}</td></tr>", if cached { "✓" } else { "" })
+        format!("<tr><td>{}</td><td>{}</td><td>{}</td><td>${:.6}</td><td>{}ms</td><td>{}</td></tr>", esc(ts), esc(short), esc(comp), cost, lat, if cached { "✓" } else { "" })
     }).collect::<Vec<_>>().join("\n");
 
     let lat_rows = latency.iter().map(|(m, avg, max)| {
         let short = m.split('-').next().unwrap_or(m);
-        format!("<tr><td>{short}</td><td>{avg:.0}ms</td><td>{max:.0}ms</td></tr>")
+        format!("<tr><td>{}</td><td>{:.0}ms</td><td>{:.0}ms</td></tr>", esc(short), avg, max)
     }).collect::<Vec<_>>().join("\n");
 
     let model_rows = by_model.iter().map(|(m, cost)| {
         let short = m.split('-').next().unwrap_or(m);
-        format!("<tr><td>{short}</td><td>${cost:.4}</td></tr>")
+        format!("<tr><td>{}</td><td>${:.4}</td></tr>", esc(short), cost)
     }).collect::<Vec<_>>().join("\n");
 
     format!(r#"<!DOCTYPE html>

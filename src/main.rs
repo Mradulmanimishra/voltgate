@@ -28,7 +28,7 @@ use axum::{
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use models::{ErrorResponse, GuardrailsConfig, OpenAIRequest};
+use models::{ErrorResponse, GuardrailsConfig, OpenAIRequest, split_system};
 use classifier::Classifier;
 use proxy::Proxy;
 use rate_limiter::RateLimiter;
@@ -178,7 +178,7 @@ async fn chat_completions(State(state): State<AppState>, headers: HeaderMap, Jso
 
     // Streaming path
     if req.stream == Some(true) {
-        let (user_system, user_messages) = split_system_for_stream(&req);
+        let (user_system, user_messages) = split_system(&req.messages);
         let (ce_body, _report) = context_engine::prepare_request(
             &user_messages, req.max_tokens, req.temperature, &classification,
             &routed_model, &state.api_key, &state.http_client, user_system,
@@ -221,16 +221,7 @@ async fn chat_completions(State(state): State<AppState>, headers: HeaderMap, Jso
     }
 }
 
-fn split_system_for_stream(req: &OpenAIRequest) -> (Option<String>, Vec<models::OpenAIMessage>) {
-    let mut system: Option<String> = None;
-    let messages = req.messages.iter().filter_map(|m| {
-        if m.role == "system" {
-            system = Some(match &m.content { serde_json::Value::String(s) => s.clone(), other => other.to_string() });
-            None
-        } else { Some(m.clone()) }
-    }).collect();
-    (system, messages)
-}
+
 
 async fn dashboard_handler(State(state): State<AppState>) -> Html<String> { Html(dashboard::render(&state.db)) }
 

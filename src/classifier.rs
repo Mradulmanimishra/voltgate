@@ -30,9 +30,15 @@ impl Classifier {
     }
 
     fn prompt_hash(text: &str) -> String {
-        let snippet = &text[..text.len().min(300)];
         let mut hasher = Sha256::new();
-        hasher.update(snippet.as_bytes());
+        // Hash prefix + suffix + length to avoid collisions on templated
+        // prompts that share a common preamble but differ in the actual task.
+        let prefix = &text[..text.len().min(300)];
+        let suffix_start = text.len().saturating_sub(200);
+        let suffix = &text[suffix_start..];
+        hasher.update(prefix.as_bytes());
+        hasher.update(suffix.as_bytes());
+        hasher.update(text.len().to_le_bytes());
         hex::encode(hasher.finalize())
     }
 

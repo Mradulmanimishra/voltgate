@@ -31,6 +31,7 @@ pub fn fallback_chain(starting_model: &str) -> Vec<String> {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct FallbackOutcome {
     pub final_model:    String,
     pub original_model: String,

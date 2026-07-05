@@ -17,3 +17,5 @@ pub mod fallback;
 pub mod webhook;
 pub mod streaming;
 pub mod state;
+pub mod embeddings;
+pub mod docs;

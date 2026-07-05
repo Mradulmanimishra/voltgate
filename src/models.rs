@@ -168,6 +168,7 @@ pub struct AnthropicUsage {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct AnthropicResponse {
     pub id:          String,
     pub content:     Vec<AnthropicContentBlock>,
@@ -194,6 +195,7 @@ pub struct ApiCallRecord {
 // ── ACP types ─────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct AcpRequest {
     pub task:          String,
     pub from_agent:    Option<String>,
@@ -315,4 +317,31 @@ impl ModelBudgetsConfig {
     pub fn should_fallback_on_exceed(&self) -> bool {
         self.on_exceeded == "fallback"
     }
+}
+
+// ── Shared helpers ────────────────────────────────────────────────────────────
+
+/// Separate `system` role messages from the rest of the conversation.
+/// The system content is returned as a single Option<String> (Anthropic
+/// expects the system prompt in a separate top-level field), while the
+/// remaining messages are returned in order.
+///
+/// If multiple system messages exist, their content is concatenated with
+/// newlines rather than silently discarding earlier ones.
+pub fn split_system(messages: &[OpenAIMessage]) -> (Option<String>, Vec<OpenAIMessage>) {
+    let mut system_parts: Vec<String> = Vec::new();
+    let msgs = messages.iter().filter_map(|m| {
+        if m.role == "system" {
+            let text = match &m.content {
+                serde_json::Value::String(s) => s.clone(),
+                other => other.to_string(),
+            };
+            system_parts.push(text);
+            None
+        } else {
+            Some(m.clone())
+        }
+    }).collect();
+    let system = if system_parts.is_empty() { None } else { Some(system_parts.join("\n")) };
+    (system, msgs)
 }

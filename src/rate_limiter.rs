@@ -115,7 +115,7 @@ impl RateLimiter {
                 Ok(())
             }
             RateLimiterBackend::Redis(client) => {
-                let mut conn = client.get_async_connection().await
+                let mut conn = client.get_multiplexed_async_connection().await
                     .map_err(|e| RateLimitError::RedisError(e.to_string()))?;
                 
                 let now = chrono::Utc::now().timestamp_millis();
@@ -158,7 +158,7 @@ impl RateLimiter {
                 Ok(total)
             }
             RateLimiterBackend::Redis(client) => {
-                let mut conn = client.get_async_connection().await
+                let mut conn = client.get_multiplexed_async_connection().await
                     .map_err(|e| RateLimitError::RedisError(e.to_string()))?;
                 let key = format!("rate_limit:spend:hourly:{}", caller_id);
                 
@@ -200,7 +200,7 @@ impl RateLimiter {
                     .collect()
             }
             RateLimiterBackend::Redis(client) => {
-                let mut conn = match client.get_async_connection().await {
+                let mut conn = match client.get_multiplexed_async_connection().await {
                     Ok(c) => c,
                     Err(_) => return vec![],
                 };
